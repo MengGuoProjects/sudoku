@@ -2,9 +2,9 @@ import React from 'react';
 import SudokuCell from './SudokuCell';
 
 function generateSudoku() {
-
     // Start with an empty grid
-    const grid = Array(9).fill().map(() => Array(9).fill(0));
+    const grid = Array(9).fill().map(() => Array(9).fill(3));
+
     // Function to check if a number is valid in a given position
     const isValid = (row, col, num) => {
         // Check if the number already exists in the same row
@@ -31,33 +31,22 @@ function generateSudoku() {
                 }
             }
         }
-
         return true;
     };
 
-    // Function to solve the sudoku using backtracking
-    const solveSudoku = () => {
+    // create random sudoku
+    const createSudoku = () => {
         for (let row = 0; row < 9; row++) {
             for (let col = 0; col < 9; col++) {
-                if (grid[row][col] === 0) {
-                    for (let num = 1; num <= 9; num++) {
-                        if (isValid(row, col, num)) {
-                            grid[row][col] = num;
-                            if (solveSudoku()) {
-                                return true;
-                            }
-                            grid[row][col] = 0;
-                        }
-                    }
-                    return false;
-                }
+                let num = Math.floor(Math.random() * 9) + 1;
+                // while (!isValid(row, col, num)) {
+                //     num = Math.floor(Math.random() * 9) + 1;
+                // }
+                grid[row][col] = num;
             }
         }
-        return true;
-    };
-
-    // Solve the sudoku
-    solveSudoku();
+    }
+    createSudoku(); // Call the createSudoku function to generate new random numbers
 
     return grid;
 }
@@ -67,6 +56,7 @@ class SudokuGrid extends React.Component {
         super(props);
         this.state = {
             grid: generateSudoku(),
+            key: Date.now(),
         };
     }
 
@@ -78,9 +68,21 @@ class SudokuGrid extends React.Component {
         this.setState({ grid }); // Update the state with the new grid value
     }
 
+    rerenderSudokuGrid = () => {
+        this.setState({ key: Date.now() });
+    }
+
+    componentDidUpdate(prevProps) {
+        // Only regenerate the Sudoku puzzle if the key prop has changed
+        if (this.props.key !== prevProps.key) {
+            this.setState({ grid: generateSudoku() });
+        }
+    }
+
     render() {
         return (
             <div className="sudoku-container">
+                <button onClick={this.rerenderSudokuGrid}>Generate New Sudoku Puzzle</button>
                 <div className="sudoku-grid">
                     {this.state.grid.map((row, i) => (
                         <div key={i} className="row">
